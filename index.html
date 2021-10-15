@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake </title>
+
+    <style>
+        body{
+            background-color: #EAB987;
+            text-align: center;
+            margin: 60px 0 0 0;
+        }
+        canvas{
+            border: solid 6px white;
+            background-color: #F3983C;
+        }
+    </style>
+</head>
+<body>
+    <canvas width="500" height="500"></canvas>
+
+    <script>
+        //tamaño de mi canvas
+        const ANCHO = 500;
+
+        let controles = {
+            direccion:{x:1,y:0},
+            bicho: [
+                //cabeza
+                {x:1, y:0}
+            ],
+            victima: {x:1, y:50},
+            jugando: false
+            }
+        
+        //VARIABLE CON DIRECCIONES
+        let haciadonde
+        
+        //referencio el canvas en JS
+        let papel = document.querySelector("canvas");
+        
+        //Genero el contxto referncio al js del contexto y le sacamos el contexto 2d
+        let ctx = papel.getContext("2d");
+
+        //guardo en constante las posibles teclas que se van a apretar
+        const DIRECCION = {
+            ArrowDown : [0, 1],
+            ArrowUp: [0, -1],
+            ArrowLeft: [-1, 0],
+            ArrowRight: [1, 0],
+            S : [0, 1],
+            W: [0, -1],
+            A: [-1, 0],
+            D: [1, 0],
+            s : [0, 1],
+            w: [0, -1],
+            a: [-1, 0],
+            d: [1, 0],
+        }
+        //cada cuantos mili segundos se ejecuta la fcion looper - INTERVALO DEL LOOP
+        const INTERVALO = 80;
+
+        // tamaño
+        const PESO = 10;
+
+        //CREO LOOPER
+        let looper = () => {
+            //Referencio cabeza - snake head
+            const sh = controles.bicho[0];  
+
+            //guardo true en atrapado
+            let atrapado = sh.x === controles.victima.x && sh.y === controles.victima.y
+            //Referencion las direcciones actuales
+            let dx = controles.direccion.x;
+            let dy = controles.direccion.y;
+            //Le sumo la dirección a su posición a la cabeza de la vibora, 
+            //cada vez q mi direcion es alguna le sumo a la cabeza esa misma dirección
+            sh.x += dx;
+            sh.y += dy;
+
+            // si atrapado = true, llamo a revictima
+            if(atrapado){
+                revictima()
+            }
+            //llamo a la animación
+            requestAnimationFrame(dibujar);
+            //intervalo q ejecuta looper cada vez q pasa el intervalo
+            setTimeout(looper, INTERVALO);
+        }
+
+        //Validar qué teclas se están apretando
+        document.onkeydown = (e)=>{
+            //guardo en variable la nueva dirección
+            haciadonde = DIRECCION[e.key]
+            //deconstruyo x e y de haciadonde
+            const [x,y] = haciadonde;
+            //que es lo mismo q hacer const x = haciadonde.x y const y = haciadonde.y
+            
+            //el avlor q tiene x negativo tiene q ser distinto al q le estoy poniendo en dirección
+            //si mi valor de -x es igual a la direccion q le estoy dando no se ejecuta 
+            //si mi valor de -x o -y es distinto a la dirreccion q le estoy dando entonces se ejecuta
+            if(-x !== controles.direccion.x && -y !== controles.direccion.y){
+            //cuando apreto letra cambio mi objeto controles - asigno direcciones a mis controles
+            controles.direccion.x = x
+            controles.direccion.y = y
+        }
+        }
+
+        //fcion dibuja la serpiente y victima c vez q cambia la posición
+        let dibujar = ()=>{     
+            //se borra el contex cuando voy a dibujar
+            ctx.clearRect(0,0,ANCHO,ANCHO)
+
+            //guarda la constante de cabeza - snake head
+            const sh = controles.bicho[0];
+
+            //creo víctima
+            const victima = controles.victima
+
+            //dibujo bicho y victima
+            dibujarActores('#73FF26', sh.x, sh.y)
+            dibujarActores('#CB26FF', victima.x, victima.y)
+        }
+
+        let dibujarActores = (color, x, y) => {
+        
+            //Indico color de lo que vaya a crear
+            ctx.fillStyle = color;             
+            //fillRect crea un rectángulo teniendo en cuenta posición de cabza, posiciónx, y, w, h
+            ctx.fillRect(x*PESO,y*PESO,PESO,PESO)
+        }
+
+        //fcion q me llama a un math.random y me sirve para poscion aleatoria
+        let random = ()=>{
+            let direccion = Object.values(DIRECCION)
+            console.log(direccion)
+            return {   
+                x: parseInt(Math.random()*ANCHO/PESO),
+                y: parseInt(Math.random()*ANCHO/PESO),
+                d: direccion[parseInt(Math.random()*11)]
+            }
+        };
+
+        //nueva posición para la victima si la atrapo
+        let revictima = ()=> {
+            let nuevaPosicion = random()
+            let victima = controles.victima
+            victima.x = nuevaPosicion.x;
+            victima.y = nuevaPosicion.y;
+        }
+
+        //cuando la ventana se cargó llamo al looper
+        window.onload = ()=>{
+            posiciones = random()
+            let cabeza = controles.bicho[0]
+            cabeza.x = posiciones.x;
+            cabeza.y = posiciones.y;
+            controles.direccion.x = posiciones.d[0]
+            controles.direccion.y = posiciones.d[1]
+
+            posicionVictima = random()
+            let victima = controles.victima
+            victima.x = posicionVictima.x;
+            victima.y = posicionVictima.y;
+
+            
+            looper()
+        }
+
+    </script>
+</body>
+</html>
